@@ -1,11 +1,19 @@
 import './App.scss';
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {Headline} from "./components/Headline.jsx";
+import TodoAdd from "./components/TodoAdd.jsx";
+import TodoList from "./components/TodoList.jsx";
+import Counter from "./components/Counter.jsx";
+import {DeleteAllBtn} from "./components/DeleteAllBtn.jsx";
+import useLocalStorage from "./useLocalStorage.js";
 
 const getId = (todos) => todos.length === 0 ? 1 : Math.max(...todos.map((task) => task.id)) + 1;
 
 function App() {
-    const [todo, setTodo] = useState('');
-    const [todos, setTodos] = useState([]);
+    const [todo, setTodo] = useLocalStorage('task');
+    const [todos, setTodos] = useLocalStorage('tasks');
+
+
     const handleAddTodo = (evt) => {
         if (evt.key === "Enter" && todo.trim().length >= 3) {
             setTodos([{
@@ -20,49 +28,37 @@ function App() {
         task.status = task.status === 'in progress' ? 'done' : 'in progress';
         setTodos([...todos]);
     };
-    const handleDelete = (todo) => {
+    const handleDeleteTodo = (todo) => {
         setTodos(todos.filter((task) => task !== todo)) // usuwanie task'a z interfejsu
     };
     const handleDeleteDoneTasks = () => {
         setTodos(todos.filter((task) => task.status !== 'done'))
     };
+
+
+
     return (
         <div className="todoapp">
-            <h1>todos</h1>
+            <Headline/>
             <section className="todos">
-                <input
-                    type="text"
-                    className="todo-input"
-                    value={todo}
-                    placeholder="What needs to be done?"
-                    onChange={(event) => setTodo(event.target.value)}
-                    onKeyUp={handleAddTodo}
+                <TodoAdd
+                todo={todo}
+                setTodo={setTodo}
+                addTodo={handleAddTodo}
                 />
-                <ul className="todos-list">
-                    {todos.map((task) => (
-                        <li
-                            className="todos-item"
-                            key={task.id}
-                        >
-                            <span 
-                                className={task.status === 'in progress' ? 'status' : 'status done'}
-                                onClick={() => handleChangeStatus(task)}
-                            ></span>
-                            <span>{task.title}</span>
-                            <button
-                                className="btn-delete"
-                                onClick={() => handleDelete(task)}
-                            >delete</button>
-                        </li>
-                    ))}
-                </ul>
+                <TodoList
+                todos={todos}
+                handleChangeStatus={handleChangeStatus}
+                handleDeleteTodo={handleDeleteTodo}
+                />
+                <Counter
+                todos={todos}
+                />
                 <div className="box">
-                    <p className="counter">{todos.filter((task) => task.status === 'in progress').length} items left</p>
+
                     {!!todos.filter((task) => task.status === 'done').length && (
-                        <button
-                            className="counter"
-                            onClick={handleDeleteDoneTasks}
-                        >Clear completed</button>
+                       <DeleteAllBtn
+                       handleDeleteDoneTasks={handleDeleteDoneTasks}/>
                     )}
                 </div>
 
